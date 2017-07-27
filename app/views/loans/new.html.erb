@@ -1,0 +1,62 @@
+<%# render 'form', loan: @loan %>
+
+<%= form_with model: @loan, :html=> {:id => 'inputForm'} do |form| %>
+  <h1>View a Loan</h1>
+  <% if @loan.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(loan.errors.count, "error") %> prohibited this loan from being saved:</h2>
+
+      <ul>
+      <% loan.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
+
+    <div class="field form-group">
+      <label for="loan_amount">Loan amount:</label>
+      <%= form.number_field :principal, id: :loan_principal, min: 0, max: 1000000, step: 1, class: 'input-control' %><br>
+      <small id="amount_help" class="form-text text-muted">This is the amount that you borrowed.</small><br>
+    </div>
+
+    <div class="field">
+      <label for="interest_rate">This is the interest rate of the loan:</label>
+      <%= form.number_field :interest, id: :loan_interest, min: 0, max: 50, step: 0.01, step: 1, class: 'input-control' %><br>
+      <small id="months_help" class="form-text text-muted">This is the interest rate of the loan.</small><br>
+
+    </div>
+
+    <div class="field form-group">
+      <label for="loan_years">Loan term in years:</label>
+      <%= form.number_field :years, id: :loan_years, min: 0, max: 30, step: 1, class: 'input-control' %><br>
+      <small id="years_help" class="form-text text-muted">This is the number of years in the loan.</small><br>
+    </div>
+
+    <strong>OR</strong><br><br>
+
+    <div class="field form-group">
+      <label for="loan_months">Loan term in months:</label>
+      <%= form.number_field :months, id: :loan_months, min: 0, max: 360, step: 1, class: 'input-control' %><br>
+      <small id="months_help" class="form-text text-muted">This is the number of months in the loan.</small><br>
+    </div>
+
+  <div class="actions">
+    <%= form.submit 'Save Loan', :class => 'btn btn-success' %>
+  </div>
+
+  <div class="btn btn-primary" id="submit_button">Plot Graph</div>
+
+<% end %>
+
+
+
+<!-- <%= link_to 'Back', loans_path %> -->
+
+  <!-- d3.js graphs container -->
+  <div id="graphDiv"></div>
+
+  <!-- particles.js container -->
+  <div id="particles-js"></div>
