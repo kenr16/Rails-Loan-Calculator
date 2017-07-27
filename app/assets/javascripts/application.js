@@ -30,6 +30,8 @@ $(document).ready(function(){
     $("#loan_years").val( (months/12).toFixed(3) )
   });
 
+
+
   var loanArray = [];
 
   $( "#submit_button" ).click(function() {
@@ -38,19 +40,18 @@ $(document).ready(function(){
     var principal = parseFloat($("#loan_principal").val());
     var loanMonths = parseFloat($("#loan_months").val());
     var effectiveInterest = parseFloat($("#loan_interest").val())/1200;
+    var loanPayment = parseFloat($("#loan_payments").val());
     var oneMonthInterest = (1+(effectiveInterest));
-
 
     var amountOwed = principal;
     var principalCompounded = principal;
-    var monthlyPayment = (principal*(effectiveInterest/(1-(1 + effectiveInterest)**(-1*loanMonths)))).toFixed(2);
+    var monthlyPayment = (principal*(effectiveInterest/(1-(1 + effectiveInterest)**(-1*loanMonths))) + loanPayment).toFixed(2);
     var totalInterest = 0;
 
     for (i=1; i< loanMonths; i++) {
       var currentInterest = amountOwed * effectiveInterest;
-
-      principalPayment = monthlyPayment - currentInterest;
-      interestPayment = currentInterest;
+      var principalPayment = monthlyPayment - currentInterest;
+      var interestPayment = currentInterest;
 
       principalCompounded *= oneMonthInterest;
       amountOwed *= oneMonthInterest;

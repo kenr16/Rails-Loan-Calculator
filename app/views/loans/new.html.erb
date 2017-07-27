@@ -39,9 +39,17 @@
 
     <div class="field form-group">
       <%= form.label :months, "Loan term in months:" %>
-      <%= form.number_field :months, id: :loan_months, min: 0, max: 360, step: 1, class: 'input-control' %><br>
+      <%= form.number_field :months, id: :loan_months, min: 1, max: 360, step: 1, class: 'input-control' %><br>
       <small id="months_help" class="form-text text-muted">This is the number of months in the loan.</small><br>
     </div>
+
+
+    <div class="field form-group">
+      <%= form.label :payments, "Additional monthly payment:" %>
+      <%= form.number_field :payments, id: :loan_payments, min: 0, max: 10000, step: 1, class: 'input-control', value: 0 %><br>
+      <small id="payments_help" class="form-text text-muted">Payments beyond required monthly bill.</small><br>
+    </div>
+
 
   <div class="actions">
     <%= form.submit 'Save Loan', :class => 'btn btn-success' %>
