@@ -31,7 +31,6 @@ $(document).ready(function(){
   });
 
 
-
   var loanArray = [];
 
   $( "#submit_button" ).click(function() {
@@ -44,9 +43,9 @@ $(document).ready(function(){
     var oneMonthInterest = (1+(effectiveInterest));
 
     var amountOwed = principal;
+    var interestPayed = 0;
     var principalCompounded = principal;
     var monthlyPayment = (principal*(effectiveInterest/(1-(1 + effectiveInterest)**(-1*loanMonths))) + loanPayment).toFixed(2);
-    var totalInterest = 0;
 
     for (i=1; i< loanMonths; i++) {
       var currentInterest = amountOwed * effectiveInterest;
@@ -56,7 +55,8 @@ $(document).ready(function(){
       principalCompounded *= oneMonthInterest;
       amountOwed *= oneMonthInterest;
       amountOwed -= monthlyPayment;
-      var oneObject = {index: i, width: 10, amount: amountOwed, monthly: monthlyPayment, principal: principalCompounded, base: principalPayment, interest: interestPayment};
+      currentInterest>0 ? interestPayed += currentInterest : interestPayed = 0;
+      var oneObject = {index: i, width: 10, amount: amountOwed, monthly: monthlyPayment, principal: principalCompounded, base: principalPayment, interest: interestPayment, extraPayed: interestPayed};
       if (i % 3 === 0) {
         loanArray.push(oneObject);
       }
@@ -67,14 +67,12 @@ $(document).ready(function(){
   });
 
 
-
 // *********************************************************************
 //   d3.js scripts beyond this point.
 // *********************************************************************
 
 
-  // After 1 month:
-  var loanRepayments = true;
+
 
   function d3Plot(loanArray) {
 
@@ -88,7 +86,7 @@ $(document).ready(function(){
 
     var yScale = d3.scaleLinear()
       .domain([ padding , d3.max(loanArray, function(d,i) { return d.amount; })+500 ])
-      .range([padding, (h - padding)]);
+      .range([0, (h - padding)]);
 
     var yScaleAxis = d3.scaleLinear()
       .domain([ d3.max(loanArray, function(d,i) { return d.amount; }), padding ])
@@ -135,15 +133,6 @@ $(document).ready(function(){
           return "rgb( " + 0 + "," + 0 + "," + (100 + i*10) + ")";
         });
 
-    allBars.transition()
-        .duration(600)
-        .attr('height', function(d,i){
-            return yScale(d.amount);
-        })
-        .attr('y', function(d,i){
-            return h - yScale(d.amount) - (1.1*padding);
-        });
-
     svg.append("g")
       .attr("transform", "translate(" + padding + "," + (h-20) + ")")
       .call(xAxis)
@@ -154,24 +143,53 @@ $(document).ready(function(){
       .call(yAxis)
       .style("stroke", "lightgrey").style("stroke-width", 1);
 
+    plotPrincipal();
+
+    var loanRepayments = true;
+
+    function plotPrincipal() {
+      allBars.transition()
+          .duration(600)
+          .attr('height', function(d,i){
+              return yScale(d.amount)>0 ? yScale(d.amount) : 0;
+          })
+          .attr('y', function(d,i){
+              return h - yScale(d.amount) - (1.1*padding);
+          });
+    }
+
+    function plotInterest() {
+      allBars.transition()
+          .duration(600)
+          .attr('height', function(d,i){
+              return yScale(d.extraPayed)>0 ? yScale(d.extraPayed) : 0;
+          })
+          .attr('y', function(d,i){
+              return h - yScale(d.extraPayed) - (1.1*padding);
+          });
+    }
+
+
+
     allBars.on("mouseover", function(d) {
 
       showPie(d.interest, d.base);
 
+      // allBars
+      //   .transition()
+      //   .duration(300)
+      //   .attr('fill', 'SteelBlue');
+
+      d3.select(this)
+        .style("stroke", "Gold").style("stroke-width", 3)
+        .transition()
+        .duration(100)
+        .attr('fill', 'BlueViolet');
+
       if (loanRepayments) {
-        allBars
-          .transition()
-          .duration(300)
-          .attr('fill', 'SteelBlue');
-
         d3.select(this)
-          .style("stroke", "Gold").style("stroke-width", 3)
-          .transition()
-          .duration(300)
-          .attr('fill', 'BlueViolet')
-
           .attr('height', function(d,i){
-              return yScale(d.amount)*1.2;
+              return yScale(d.amount)>0 ? yScale(d.amount)*1.2 : 0;
           })
           .attr('y', function(d,i){
               return h - yScale(d.amount)*1.2 - (1.1*padding);
@@ -184,7 +202,12 @@ $(document).ready(function(){
           .style("left", (d3.event.pageX) + "px")
           .style("top", (d3.event.pageY - 28) + "px");
       } else if (!loanRepayments) {
-
+        div.transition()
+          .duration(200)
+          .style("opacity", .9);
+        div.html("<strong> Month: </strong>" + d.index + "<br/> <strong> Total Interest Payed: $</strong>" + d.extraPayed.toFixed(2) + "<br/> <strong> Monthly Payment: $</strong>" + d.monthly)
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
 
       }
     })
@@ -193,113 +216,36 @@ $(document).ready(function(){
 
     function hideData(){
       div.transition()
-        .duration(500)
+        .duration(300)
         .style("opacity", 0);
 
+    allBars
+      .style("stroke", "black")
+      .style("stroke-width", 2)
+      .attr("fill", function(d,i) {
+        return "rgb( " + 0 + "," + 0 + "," + (100 + i*10) + ")";
+      });
+
       if (loanRepayments) {
-
-        allBars
-          .style("stroke", "black")
-          .style("stroke-width", 2)
-          .attr('height', function(d,i){
-              return yScale(d.amount);
-          })
-          .attr('y', function(d,i){
-              return h - yScale(d.amount) - (1.1*padding);
-          })
-          .attr("fill", function(d,i) {
-            return "rgb( " + 0 + "," + 0 + "," + (100 + i*10) + ")";
-          })
-          .attr('width', function(d,i){
-              return (.75*w / loanArray.length)-4
-          })
-          .attr('x', function(d,i){
-              // return (d.index) * (d.width+6);
-              return xScale(i)*3 - (.8*padding);
-          })
-          .style("opacity", .9)
-          .attr('rx', 0)
-          .attr('ry', 0)
-
-          ;
+        plotPrincipal();
+      } else {
+        plotInterest();
       }
+
     };
-
-
 
 
     allBars.on("click", function(d) {
 
-      // loanRepayments = false;
-
-      d3.select(this).transition()
-        .duration(500)
-        .attr('height', (Math.min(w, h) / 1.5))
-        .attr('width', (Math.min(w, h) / 1.5))
-        .attr('fill', 'steelblue')
-        .style("opacity", .5)
-        .style("stroke", "black")
-        .style("stroke-width", 1)
-        .attr('rx', 20)
-        .attr('ry', 20)
-        .attr('y', (h / 3)-(Math.min(w, h) / 3))
-        .attr('x', (w * .85)-(Math.min(w, h) / 3))
-        .on('end', function(d,i){
-          setTimeout(function(){
-             showPie(d.interest, d.base);
-          }, 100);
-
-
-        });
+      if (loanRepayments) {
+        loanRepayments = false;
+        plotInterest()
+      } else if (!loanRepayments) {
+        loanRepayments = true;
+        plotPrincipal();
+      }
 
     });
-
-      // if (loanRepayments) {
-    //     loanRepayments = false;
-    //
-    //     allBars
-    //       .transition()
-    //       .duration(300)
-    //       .attr('fill', 'red')
-    //       .attr('x', function(d,i){
-    //           return (d.index) * (d.width+6);
-    //       })
-    //       .attr('y', function(d,i){
-    //           return h - d.principal/500;
-    //       })
-    //       .attr('height', function(d,i){
-    //           return d.principal/500;
-    //       })
-    //       .attr('width', d.width)
-    //       ;
-    //
-    //     div.html("<strong> Month: </strong>" + d.index + "<br/> <strong> Amount Owed Without Payment: </strong>" + d.principal.toFixed(2) + "<br/> <strong> Monthly Payment: </strong>" + d.monthly)
-    //       .style("left", (d3.event.pageX) + "px")
-    //       .style("top", (d3.event.pageY - 28) + "px");
-    //   } else if (!loanRepayments) {
-    //     loanRepayments = true;
-    //
-    //     allBars
-    //       .transition()
-    //       .duration(300)
-    //       .attr('fill', 'red')
-    //       .attr('y', function(d,i){
-    //           return h - d.amount/100;
-    //       })
-    //       .attr('x', function(d,i){
-    //           return (d.index) * (d.width+6)
-    //       })
-    //
-    //       .attr('height', function(d,i){
-    //           return d.amount/100;
-    //       })
-    //       ;
-    //
-    //
-    //     div.html("<strong> Month: </strong>" + d.index + "<br/> <strong> Amount Still Owed: </strong>" + d.amount.toFixed(2) + "<br/> <strong> Monthly Payment: </strong>" + d.monthly)
-    //       .style("left", (d3.event.pageX) + "px")
-    //       .style("top", (d3.event.pageY - 28) + "px");
-    //   }
 
 
     function showPie(interest, base) {
@@ -314,7 +260,7 @@ $(document).ready(function(){
                  ];
 
       radius = Math.min(w, h) / 3,
-      g = svg.append("g").attr("transform", "translate(" + w * .85 + "," + h / 3 + ")");
+      g = svg.append("g").attr("transform", "translate(" + w * .87 + "," + h / 3 + ")");
 
       svg.selectAll(".arc").remove();
       // var color = d3.scaleOrdinal(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
