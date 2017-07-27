@@ -17,20 +17,20 @@
 
 
     <div class="field form-group">
-      <label for="loan_amount">Loan amount:</label>
+      <%= form.label :principal, "Loan amount:" %>
       <%= form.number_field :principal, id: :loan_principal, min: 0, max: 1000000, step: 1, class: 'input-control' %><br>
       <small id="amount_help" class="form-text text-muted">This is the amount that you borrowed.</small><br>
     </div>
 
     <div class="field">
-      <label for="interest_rate">This is the interest rate of the loan:</label>
+      <%= form.label :interest, "Loan interest rate:" %>
       <%= form.number_field :interest, id: :loan_interest, min: 0, max: 50, step: 0.01, step: 1, class: 'input-control' %><br>
       <small id="months_help" class="form-text text-muted">This is the interest rate of the loan.</small><br>
 
     </div>
 
     <div class="field form-group">
-      <label for="loan_years">Loan term in years:</label>
+      <%= form.label :years, "Loan term in years:" %>
       <%= form.number_field :years, id: :loan_years, min: 0, max: 30, step: 1, class: 'input-control' %><br>
       <small id="years_help" class="form-text text-muted">This is the number of years in the loan.</small><br>
     </div>
@@ -38,7 +38,7 @@
     <strong>OR</strong><br><br>
 
     <div class="field form-group">
-      <label for="loan_months">Loan term in months:</label>
+      <%= form.label :months, "Loan term in months:" %>
       <%= form.number_field :months, id: :loan_months, min: 0, max: 360, step: 1, class: 'input-control' %><br>
       <small id="months_help" class="form-text text-muted">This is the number of months in the loan.</small><br>
     </div>
